@@ -68,6 +68,7 @@ const int SemiForward  = S( 17, 15);
 const int NBBehindPawn = S(  9, 32);
 const int BishopBadP   = S( -1, -5);
 const int Shelter      = S( 31,-12);
+const int outPostBonus = S( 47, 19);
 
 // Passed pawn
 const int PawnPassed[RANK_NB] = {
@@ -295,6 +296,14 @@ INLINE int EvalPiece(const Position *pos, EvalInfo *ei, const Color color, const
             int count = PopCount(badPawns) * PopCount(blockedBadPawns);
             eval += count * BishopBadP;
             TraceCount(BishopBadP);
+        }
+
+        Bitboard outPostSquares = (KingSideBB | QueenSideBB) & ~(fileABB | fileHBB) & ~(Fill(RankBB[RelativeRank(color, RANK_3)], down));
+
+        if (   (pt == BISHOP || pt == KNIGHT) && !((PassedMask[color][sq] & ~FileBB[FileOf(sq)]) & colorPieceBB(!color, PAWN)) 
+            && (PawnAttackBB(!color, sq) & colorPieceBB(color, PAWN)) && (BB(sq) & outPostSquares)) {
+            eval += outPostBonus;
+            TraceIncr(outPostBonus);
         }
 
         // Forward mobility for rooks
