@@ -85,7 +85,7 @@ typedef struct EvalTrace {
     int NBBehindPawn[COLOR_NB];
     int BishopBadP[COLOR_NB];
     int Shelter[COLOR_NB];
-    int outPostBonus[COLOR_NB];
+    int BishopBBP[COLOR_NB];
 
     int PawnPassed[RANK_NB][COLOR_NB];
     int PassedDefended[RANK_NB][COLOR_NB];
