@@ -68,6 +68,7 @@ const int SemiForward  = S( 17, 15);
 const int NBBehindPawn = S(  9, 32);
 const int BishopBadP   = S( -1, -5);
 const int Shelter      = S( 31,-12);
+const int BlockingKnight = S(17, 15);
 
 // Passed pawn
 const int PawnPassed[RANK_NB] = {
@@ -285,6 +286,14 @@ INLINE int EvalPiece(const Position *pos, EvalInfo *ei, const Color color, const
 
         ei->attackedBy[color][pt]  |= attackBB;
         ei->attackedBy[color][ALL] |= attackBB;
+
+        if (   pt == KNIGHT 
+            && (ShiftBB(BB(sq), up) & colorPieceBB(!color, PAWN)) 
+            && !((PassedMask[color][sq] & ~FileBB[FileOf(sq)]) & colorPieceBB(!color, PAWN))
+            && BB(sq) & BlockSquares) {
+            eval += BlockingKnight;
+            TraceIncr(BlockingKnight);
+        }
 
         // Penalty for having pawns on the same color squares as a bishop
         if (pt == BISHOP) {

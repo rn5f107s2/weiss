@@ -102,6 +102,8 @@ enum {
 
     QueenSideBB = fileABB | fileBBB | fileCBB | fileDBB,
     KingSideBB  = fileEBB | fileFBB | fileGBB | fileHBB,
+
+    BlockSquares = (rank3BB | rank4BB | rank5BB | rank6BB) & (fileCBB | fileDBB | fileEBB | fileFBB),
 };
 
 extern const Bitboard FileBB[FILE_NB];
