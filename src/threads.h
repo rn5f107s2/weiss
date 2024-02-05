@@ -49,6 +49,7 @@ typedef struct {
     Move excluded;
     Move killers[2];
     PV pv;
+    int gain;
 } Stack;
 
 typedef struct RootMove {

@@ -522,7 +522,7 @@ static int ScaleFactor(const Position *pos, const int eval) {
 }
 
 // Calculate a static evaluation of a position
-int EvalPosition(const Position *pos, PawnCache pc) {
+int EvalPosition(const Position *pos, PawnCache pc, int prevGain) {
 
     Endgame *eg = &EndgameTable[EndgameIndex(pos->materialKey)];
 
@@ -561,6 +561,8 @@ int EvalPosition(const Position *pos, PawnCache pc) {
             + EgScore(eval) * (MidGame - pos->phase) * scale / 128)
           / MidGame;
 
+    int tempo = CLAMP(prevGain, Tempo, Tempo * 2);
+
     // Return the evaluation, negated if we are black + tempo bonus
-    return (sideToMove == WHITE ? eval : -eval) + Tempo;
+    return (sideToMove == WHITE ? eval : -eval) + tempo;
 }

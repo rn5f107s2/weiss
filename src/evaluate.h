@@ -53,10 +53,10 @@ INLINE int UpdatePhase(int value) {
 }
 
 // Returns a static evaluation of the position from the side to move's point of view
-int EvalPosition(const Position *pos, PawnCache pc);
+int EvalPosition(const Position *pos, PawnCache pc, int prevGain);
 
 // Returns a static evaluation of the position from whites point of view
 INLINE int EvalPositionWhitePov(const Position *pos, PawnCache pc) {
-    int score = EvalPosition(pos, pc);
+    int score = EvalPosition(pos, pc, 0);
     return sideToMove == WHITE ? score : -score;
 }

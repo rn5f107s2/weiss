@@ -105,7 +105,7 @@ static int Quiescence(Thread *thread, Stack *ss, int alpha, const int beta) {
     // Do a static evaluation for pruning considerations
     eval = history(-1).move == NOMOVE ? -(ss-1)->staticEval + 2 * Tempo
          : ttEval != NOSCORE          ? ttEval
-                                      : EvalPosition(pos, thread->pawnCache);
+                                      : EvalPosition(pos, thread->pawnCache, (ss-2)->gain);
 
     // If we are at max depth, return static eval
     if (ss->ply >= MAX_PLY)
@@ -220,7 +220,7 @@ static int AlphaBeta(Thread *thread, Stack *ss, int alpha, int beta, Depth depth
 
         // Max depth reached
         if (ss->ply >= MAX_PLY)
-            return EvalPosition(pos, thread->pawnCache);
+            return EvalPosition(pos, thread->pawnCache, (ss-2)->gain);
 
         // Mate distance pruning
         alpha = MAX(alpha, -MATE + ss->ply);
@@ -289,7 +289,7 @@ static int AlphaBeta(Thread *thread, Stack *ss, int alpha, int beta, Depth depth
     int eval = ss->staticEval =  inCheck           ? NOSCORE
                                : lastMoveNullMove  ? -(ss-1)->staticEval + 2 * Tempo
                                : ttEval != NOSCORE ? ttEval
-                                                   : EvalPosition(pos, thread->pawnCache);
+                                                   : EvalPosition(pos, thread->pawnCache, (ss-2)->gain);
 
     // Use ttScore as eval if it is more informative
     if (ttScore != NOSCORE && TTScoreIsMoreInformative(ttBound, ttScore, eval))
@@ -378,6 +378,7 @@ move_loop:
     Move bestMove = NOMOVE;
     int moveCount = 0, quietCount = 0, noisyCount = 0;
     int score = -INFINITE;
+    ss->gain = 0;
 
     Color opponent = !sideToMove;
 
@@ -413,6 +414,8 @@ move_loop:
             if (lmrDepth < 7 && !SEE(pos, move, quiet ? -53 * depth : -73 * depth))
                 continue;
         }
+
+        (ss+1)->staticEval = NOSCORE;
 
         // Make the move, skipping to the next if illegal
         if (!MakeMove(pos, move)) continue;
@@ -516,6 +519,9 @@ skip_extensions:
         // Full depth alpha-beta window search
         if (pvNode && (score > alpha || moveCount == 1))
             score = -AlphaBeta(thread, ss+1, -beta, -alpha, newDepth, false);
+
+        if (quiet && ss->ply < MAX_PLY - 1 && (ss+1)->staticEval != NOSCORE)
+            ss->gain = MAX(ss->gain, (ss+1)->staticEval - ss->staticEval);
 
         // Undo the move
         TakeMove(pos);
